@@ -3,7 +3,7 @@
 # Purpose:      Framework for analyzing species counterpoint.
 #
 # Author:       Robert Snarrenberg
-# Copyright:    (c) 2021 by Robert Snarrenberg
+# Copyright:    (c) 2022 by Robert Snarrenberg
 # License:      BSD, see license.txt
 # -----------------------------------------------------------------------------
 """
@@ -139,13 +139,13 @@ class GlobalContext(Context):
 
     #. For each note in the part:
 
-       * A position index is assigned. The is the primary note
+       * A position index is assigned. This is the primary note
          reference used during parsing.
        * A concrete scale degree (:py:class:`~csd.ConcreteScaleDegree`)
          is determined.
        * A :py:class:`~rule.Rule` object is attached.
        * A :py:class:`~dependency.Dependency` object is attached.
-       * The manner or approach and departure
+       * The manner of approach and departure
          (:py:class:`~consecutions.Consecutions`) for the note are determined.
 
     #. Measure-long local harmonic contexts are created,
@@ -160,11 +160,13 @@ class GlobalContext(Context):
         self.score.errors = []
         self.errors = []
         self.errorsDict = {}
+        self.parseReport = ''
         if kwargs.get('harmonicSpecies'):
             self.harmonicSpecies = kwargs['harmonicSpecies']
         else:
             self.harmonicSpecies = False
-
+        if kwargs.get('filename'):
+            self.filename = kwargs['filename']
         # (1) Verify that there are parts populated with notes.
         # TODO: only check selected parts
         try:
@@ -195,7 +197,7 @@ class GlobalContext(Context):
         #     Create a local context given a start and stop offset
         #     in an enclosing Context.
         #     """
-        #     locCxt = cxt.flat.getElementsByOffset(cxtOn,
+        #     locCxt = cxt.flatten().getElementsByOffset(cxtOn,
         #                                      cxtOff,
         #                                      includeEndBoundary=True,
         #                                      mustFinishInSpan=False,
@@ -343,12 +345,12 @@ class GlobalContext(Context):
                  part.scale.pitchFromDegree(5)])
             part.dominantTriad = chord.Chord(
                 [part.scale.pitchFromDegree(5),
-                 part.scale.pitchFromDegree(7, direction='ascending'),
+                 part.scale.pitchFromDegree(7, direction=scale.Direction.ASCENDING),
                  part.scale.pitchFromDegree(2)])
             part.predominantTriad = chord.Chord(
                 [part.scale.pitchFromDegree(2),
                  part.scale.pitchFromDegree(4),
-                 part.scale.pitchFromDegree(6, direction='descending')])
+                 part.scale.pitchFromDegree(6, direction=scale.Direction.DESCENDING)])
 
             # Assign scale degrees to notes.
             for indx, note in enumerate(part.recurse().notes):
@@ -383,7 +385,7 @@ class GlobalContext(Context):
             harmonicEssentials = []
             for part in self.score.parts:
                 # Get all the notes in the local span.
-                localPartElements = part.flat.recurse().getElementsByOffset(
+                localPartElements = part.flatten().recurse().getElementsByOffset(
                     offsetStart,
                     offsetEnd,
                     includeEndBoundary=False,
@@ -473,10 +475,32 @@ class GlobalContext(Context):
 
         for ts in self.timespans:
             tsNotes = []
-            for n in ts.score.parts[0].flat.notes:
+            for n in ts.score.parts[0].flatten().notes:
                 if ts.start <= n.offset <= ts.end:
                     tsNotes.append(n.index)
             pass  # print(tsNotes)
+
+    def makeTwoPartContexts(self):
+        partNumPairs = vlChecker.getAllPartNumPairs(self.score)
+        bassPartNum = self.parts[-1].partNum
+        twoPartContexts = []
+        if partNumPairs:
+            for pair in partNumPairs:
+                parts = [self.parts[pair[0]], self.parts[pair[1]]]
+                duet = stream.Score(givenElements=parts)
+                # copy part number in context to part in duet
+                duet.parts[0].parentID = pair[0]
+                duet.parts[1].parentID = pair[1]
+                duet.key = self.key
+                # duetScore.score = duetScore
+                duet.filename = f'Parts {pair[0]} and {pair[1]}'
+                if bassPartNum in pair:
+                    duet.includesBass = True
+                else:
+                    duet.includesBass = False
+                twoPartContexts.append(duet)
+                # duetScore.show()
+        return twoPartContexts
 
 
 class TimeSpan:

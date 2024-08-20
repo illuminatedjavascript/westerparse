@@ -28,7 +28,7 @@ Yes:
 
 * Westegaardian Species Counterpoint Online: 
       
-  * https://ada.artsci.wustl.edu/westerparse/
+  * https://talus.artsci.wustl.edu/westerparse/
       
 If you want to know how the program interprets Westergaard's own examples of
 counterpoint, you can use the WesterParse Corpus Viewer, which includes over
@@ -120,7 +120,7 @@ Install ``music21``.
 
 .. code-block:: shell
 
-   $ pip install music21
+   $ pip3 install music21
    
 And then configure ``music21`` to use a musicxml viewer like MuseScore. 
 See the instructions on the
@@ -130,7 +130,7 @@ Install the WesterParse code from GitHub:
 
 .. code-block:: shell
 
-   $ git+git://github.com/snarrenberg/westerparse.git
+   $ pip3 install git+https://github.com/snarrenberg/westerparse.git
 
 (You can also get the latest WesterParse release from
 `GitHub <https://github.com/snarrenberg/westerparse/releases>`_.

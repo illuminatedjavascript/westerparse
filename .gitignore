@@ -1,11 +1,15 @@
 logfile.txt
 parser.txt
+sonorityChecker
+theoryAnalyzerWP
+theoryResultWP
 Untitled.txt
 vlCheckerNEW
 vl.txt
 westerparse.txt
 interface_to_westerparse
 __pycache__/
+.readthedocs.yml
 
 # Packages
 *.egg
